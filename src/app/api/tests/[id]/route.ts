@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import handlePrismaError from "@/lib/prismaErrorHandler";
+import handlePrismaError from "@/lib/ErrorHandler";
 
 
 /**
@@ -53,7 +53,6 @@ export async function GET(
     return NextResponse.json({ error: message }, { status });
   }
 }
-
 
 /**
  * PUT /api/tests/[id] - Update a diagnostic test by ID

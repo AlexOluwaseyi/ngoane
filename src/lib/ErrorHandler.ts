@@ -1,6 +1,9 @@
 import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 
 function handlePrismaError(error: unknown) {
+  // console.log(error)
+
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case "P2000":
@@ -84,6 +87,20 @@ function handlePrismaError(error: unknown) {
       message: `Invalid JSON syntax: ${error.message}`,
     };
   }
+
+  if (error instanceof ZodError) {
+    // Create a concise but informative message from all validation errors
+    const errorDetails = error.errors.map(err => {
+      const fieldName = err.path.length > 0 ? err.path.join('.') : 'value';
+      return `${fieldName}: ${err.message}`;
+    }).join('; ');
+    
+    return {
+      status: 400,
+      message: `Validation error - ${errorDetails}`
+    };
+  }
+
   return {
     status: 500,
     message: "An unexpected error occurred. Please try again later.",

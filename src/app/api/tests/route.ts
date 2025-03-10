@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import handlePrismaError from "@/lib/prismaErrorHandler";
+import handlePrismaError from "@/lib/ErrorHandler";
 
 /**
  * GET /api/tests - Get all diagnostic tests
