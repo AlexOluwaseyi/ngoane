@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import handlePrismaError from "@/lib/prismaErrorHandler";
 
+
+/**
+ * GET /api/tests/[id] - Get a diagnostic test by ID
+ * 
+ * Gets a single diagnostic test record by ID from the database using Prisma ORM.
+ * Gets ID from the request parameters and returns the record if found.
+ * @param {Request} request - The HTTP request object containing the ID parameter
+ * @param {Promise<{ id: string }>} params - The ID parameter from the request
+ * @returns {Promise<Response>} JSON response with record or error message
+ * @throws Will be caught and handled by handlePrismaError for any database errors
+ */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -43,6 +54,17 @@ export async function GET(
   }
 }
 
+
+/**
+ * PUT /api/tests/[id] - Update a diagnostic test by ID
+ * 
+ * Updates a single diagnostic test record by ID in the database using Prisma ORM.
+ * Gets ID from the request parameters and updates the record with the request body.
+ * @param {Request} request - The HTTP request object containing the ID parameter and JSON body
+ * @param {Promise<{ id: string }>} params - The ID parameter from the request
+ * @returns {Promise<Response>} JSON response with updated record or error message
+ * @throws Will be caught and handled by handlePrismaError for any database errors
+ */
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -115,6 +137,16 @@ export async function PUT(
   }
 }
 
+/**
+ * DELETE /api/tests/[id] - Delete a diagnostic test by ID
+ * 
+ * Deletes a single diagnostic test record by ID from the database using Prisma ORM.
+ * Gets ID from the request parameters and deletes the record if found.
+ * @param {Request} request - The HTTP request object containing the ID parameter
+ * @param {Promise<{ id: string }>} params - The ID parameter from the request
+ * @returns {Promise<Response>} JSON response with success message or error message
+ * @throws Will be caught and handled by handlePrismaError for any database errors
+ */
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
