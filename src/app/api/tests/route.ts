@@ -50,6 +50,7 @@ export async function GET(): Promise<Response> {
  */
 export async function POST(request: Request): Promise<Response> {
   try {
+    // Parse the request body as JSON
     const body = await request.json();
 
     // Check if the request body is empty
