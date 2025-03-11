@@ -27,7 +27,7 @@ export async function GET(): Promise<Response> {
   } catch (error) {
     // Handle errors
     const { status, message } = handlePrismaError(error);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ message: message }, { status });
   }
 }
 
@@ -56,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
     // Check if the request body is empty
     if (!body) {
       return NextResponse.json(
-        { error: "Data not sent in request." },
+        { message: "Data not sent in request." },
         { status: 400 }
       );
     }
@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
     // Check if the request body is missing any required fields
     if (!body.patientName || !body.testType || !body.result) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { message: "Missing required fields." },
         { status: 400 }
       );
     }
@@ -86,6 +86,6 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     // Handle errors
     const { status, message } = handlePrismaError(error);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ message: message }, { status });
   }
 }
