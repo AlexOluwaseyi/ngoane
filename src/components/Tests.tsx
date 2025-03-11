@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import TestRecord from "@/types/TestRecord";
-import DeleteModal from "./DeleteModal";
+import DeleteModal from "./modals/DeleteModal";
 import Link from "next/link";
 
 const Tests = () => {
@@ -9,7 +9,6 @@ const Tests = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<TestRecord | null>(null);
-  //   const [error, setError] = useState<ApiResponse[]>([]);
 
   useEffect(() => {
     document.title = "Tests Records";
@@ -86,7 +85,7 @@ const Tests = () => {
 
       <div className="overflow-x-auto shadow-md rounded-lg border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-black">
+          <thead className="bg-gradient-to-r from-blue-900 to-green-900">
             <tr>
               <th
                 scope="col"
