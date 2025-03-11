@@ -1,12 +1,12 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import LandingPage from "@/components/LandingPage";
+import Tests from "@/components/Tests";
 
 const Page = () => {
   return (
     <>
       <Header />
-      <LandingPage />
+      <Tests />
       <Footer />
     </>
   );

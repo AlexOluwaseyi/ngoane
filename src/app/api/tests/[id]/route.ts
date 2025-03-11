@@ -24,7 +24,7 @@ export async function GET(
     // Check if no ID is provided
     if (!id) {
       return NextResponse.json(
-        { error: "No ID provided in request." },
+        { message: "No ID provided in request." },
         { status: 400 }
       );
     }
@@ -50,7 +50,7 @@ export async function GET(
   } catch (error) {
     // Handle errors
     const { status, message } = handlePrismaError(error);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ message: message }, { status });
   }
 }
 
@@ -75,7 +75,7 @@ export async function PUT(
     // Check if no ID is provided
     if (!id) {
       return NextResponse.json(
-        { error: "No ID provided in request." },
+        { message: "No ID provided in request." },
         { status: 400 }
       );
     }
@@ -86,7 +86,7 @@ export async function PUT(
     // Check if the request body is empty
     if (!body) {
       return NextResponse.json(
-        { error: "Data not sent in request." },
+        { message: "Data not sent in request." },
         { status: 400 }
       );
     }
@@ -94,7 +94,7 @@ export async function PUT(
     // Check if the request body is missing any required fields
     if (!body.testType || !body.result) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { message: "Missing required fields." },
         { status: 400 }
       );
     }
@@ -132,7 +132,7 @@ export async function PUT(
     );
   } catch (error) {
     const { status, message } = handlePrismaError(error);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ message: message }, { status });
   }
 }
 
@@ -157,7 +157,7 @@ export async function DELETE(
     // Check if no ID is provided
     if (!id) {
       return NextResponse.json(
-        { error: "No ID provided in request." },
+        { message: "No ID provided in request." },
         { status: 400 }
       );
     }
@@ -182,6 +182,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Record deleted" }, { status: 200 });
   } catch (error) {
     const { status, message } = handlePrismaError(error);
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ message: message }, { status });
   }
 }
