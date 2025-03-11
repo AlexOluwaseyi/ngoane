@@ -9,17 +9,20 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_POSTGRES_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model DiagnosticTest {
   id          Int      @id @default(autoincrement())
-  patientName String
-  testType    String
+  patientName String   @map("patient_name")
+  testType    String   @map("test_type")
   result      String
-  testDate    DateTime @default(now())
+  testDate    DateTime @default(now()) @map("test_date")
   notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("diagnostic_tests")
 }

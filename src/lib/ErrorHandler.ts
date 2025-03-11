@@ -74,6 +74,21 @@ function handlePrismaError(error: unknown) {
     };
   }
 
+  if (error instanceof Error && error.message.includes('could not connect to server')) {
+    return {
+      status: 503,
+      message: "Database connection failed. The database service may be unavailable."
+    };
+  }
+  
+  // Add for timeout errors
+  if (error instanceof Error && error.message.includes('timeout')) {
+    return {
+      status: 504,
+      message: "Database operation timed out. Please try again."
+    };
+  }
+
   if (error instanceof Prisma.PrismaClientUnknownRequestError) {
     return {
       status: 500,

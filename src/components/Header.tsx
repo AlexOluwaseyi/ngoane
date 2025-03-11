@@ -28,7 +28,7 @@ const Header = () => {
     <>
       <header className="bg-black max-w-4xl md:max-w-10/12 mx-auto text-white h-16 flex items-center justify-between px-6">
         <div id="header" className="hover:underline md:text-4xl font-bold">
-          <a href="#">NGOANE</a>
+          <Link href="/">NGOANE</Link>
         </div>
         <div className="col-span-1 grid grid-cols-1 gap-4">
           <button
