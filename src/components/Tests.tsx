@@ -114,6 +114,16 @@ const Tests = () => {
             </tr>
           </thead>
           <tbody className="divide-y bg-black divide-gray-200">
+            {tests.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-6 py-4 text-center text-sm text-white"
+                >
+                  No records found
+                </td>
+              </tr>
+            )}
             {tests.map((test, index) => (
               <tr key={test.id} className="">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white border-r">
@@ -143,16 +153,6 @@ const Tests = () => {
                 </td>
               </tr>
             ))}
-            {tests.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-6 py-4 text-center text-sm text-white"
-                >
-                  No records found
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
