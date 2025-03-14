@@ -13,6 +13,59 @@ const Header = () => {
   >("idle");
   const [apiMessage, setApiMessage] = useState("");
 
+  // Update the checkApiHealth function to handle fetch errors properly
+
+  const checkApiHealth = useCallback(
+    async (e?: React.MouseEvent) => {
+      if (e) e.preventDefault();
+
+      try {
+        setApiStatus("checking");
+        if (e) setApiMessage("Checking API connection..."); // Only show message on manual check
+
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch("/api/healthcheck", {
+          signal: controller.signal,
+          // Add cache-busting query parameter
+          headers: { "Cache-Control": "no-cache" },
+        });
+
+        clearTimeout(timeoutId);
+
+        const data = await response.json();
+
+        if (response.ok && data.status === "ok") {
+          setApiStatus("success");
+          if (e) setApiMessage("Database connected successfully!");
+        } else {
+          setApiStatus("error");
+          setApiMessage(data.message || "API check failed");
+        }
+      } catch (error) {
+        setApiStatus("error");
+
+        // More detailed error messages
+        if (error instanceof DOMException && error.name === "AbortError") {
+          setApiMessage("API check timed out. Server may be slow.");
+        } else {
+          setApiMessage("Failed to connect to API");
+          console.error("API check error:", error);
+        }
+      }
+
+      // Hide toast message after 2 seconds, but only if it was set
+      if (apiMessage) {
+        setTimeout(() => {
+          setApiMessage("");
+        }, 2000);
+      }
+    },
+    [apiMessage]
+  ); // Empty dependency array since we don't use any external values
+
   // Check API status on component mount and periodically
   useEffect(() => {
     checkApiHealth();
@@ -23,7 +76,7 @@ const Header = () => {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [checkApiHealth]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -41,36 +94,6 @@ const Header = () => {
     window.location.href = `/tests/${newTest.id}`;
   };
 
-  // Define checkApiHealth with useCallback
-  const checkApiHealth = useCallback(async (e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
-
-    try {
-      setApiStatus("checking");
-      setApiMessage("Checking API connection...");
-
-      const response = await fetch("/api/healthcheck");
-      const data = await response.json();
-
-      if (response.ok && data.status === "ok") {
-        setApiStatus("success");
-        setApiMessage("Database connected successfully!");
-      } else {
-        setApiStatus("error");
-        setApiMessage(data.message || "API check failed");
-      }
-    } catch (error) {
-      setApiStatus("error");
-      setApiMessage("Failed to connect to API");
-      console.error("API check error:", error);
-    }
-
-    // Hide toast message after 2 seconds
-    setTimeout(() => {
-      setApiMessage("");
-    }, 2000);
-  }, []); // Empty dependency array since we don't use any external values
-
   return (
     <>
       <header className="bg-black max-w-4xl md:max-w-10/12 mx-auto text-white h-16 flex items-center justify-between px-6">
@@ -80,19 +103,19 @@ const Header = () => {
 
         <div className="col-span-1 grid grid-cols-1 gap-4">
           {/* Status Indicator Circle */}
-          <div className="hidden sm:flex items-center absolute top-5 right-28">
+          <div className="hidden sm:flex items-center justify-center absolute top-5 right-28">
             <div
               className="relative group cursor-pointer"
               onClick={checkApiHealth}
             >
               {apiStatus === "checking" ? (
-                <div className="w-4 h-4 rounded-full bg-blue-400 animate-pulse" />
+                <div className="w-5 h-5 rounded-full bg-blue-400 animate-pulse" />
               ) : apiStatus === "success" ? (
-                <div className="w-4 h-4 rounded-full bg-green-500" />
+                <div className="w-5 h-5 rounded-full bg-green-500" />
               ) : apiStatus === "error" ? (
-                <div className="w-4 h-4 rounded-full bg-red-500" />
+                <div className="w-5 h-5 rounded-full bg-red-500" />
               ) : (
-                <div className="w-4 h-4 rounded-full bg-gray-400" />
+                <div className="w-5 h-5 rounded-full bg-gray-400" />
               )}
 
               {/* Tooltip */}
