@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import TestRecord from "@/types/TestRecord";
 import CreateModal from "./modals/CreateModal";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -12,6 +12,18 @@ const Header = () => {
     "idle" | "checking" | "success" | "error"
   >("idle");
   const [apiMessage, setApiMessage] = useState("");
+
+  // Check API status on component mount and periodically
+  useEffect(() => {
+    checkApiHealth();
+
+    // Check API every 30 seconds
+    const interval = setInterval(() => {
+      checkApiHealth();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -29,7 +41,8 @@ const Header = () => {
     window.location.href = `/tests/${newTest.id}`;
   };
 
-  const checkApiHealth = async (e?: React.MouseEvent) => {
+  // Define checkApiHealth with useCallback
+  const checkApiHealth = useCallback(async (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
 
     try {
@@ -52,12 +65,11 @@ const Header = () => {
       console.error("API check error:", error);
     }
 
-    // Hide status after 5 seconds
+    // Hide toast message after 2 seconds
     setTimeout(() => {
-      setApiStatus("idle");
       setApiMessage("");
-    }, 5000);
-  };
+    }, 2000);
+  }, []); // Empty dependency array since we don't use any external values
 
   return (
     <>
@@ -65,7 +77,37 @@ const Header = () => {
         <div id="header" className="hover:underline md:text-4xl font-bold">
           <Link href="/">NGOANE</Link>
         </div>
+
         <div className="col-span-1 grid grid-cols-1 gap-4">
+          {/* Status Indicator Circle */}
+          <div className="hidden sm:flex items-center absolute top-5 right-28">
+            <div
+              className="relative group cursor-pointer"
+              onClick={checkApiHealth}
+            >
+              {apiStatus === "checking" ? (
+                <div className="w-4 h-4 rounded-full bg-blue-400 animate-pulse" />
+              ) : apiStatus === "success" ? (
+                <div className="w-4 h-4 rounded-full bg-green-500" />
+              ) : apiStatus === "error" ? (
+                <div className="w-4 h-4 rounded-full bg-red-500" />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-gray-400" />
+              )}
+
+              {/* Tooltip */}
+              <div className="absolute hidden group-hover:block top-6 right-0 w-48 bg-gray-900 text-white text-xs rounded py-1 px-2">
+                {apiStatus === "checking"
+                  ? "Checking API connection..."
+                  : apiStatus === "success"
+                  ? "API connected successfully"
+                  : apiStatus === "error"
+                  ? "API connection failed"
+                  : "Click to check API status"}
+              </div>
+            </div>
+          </div>
+
           <button
             id="mobile-open-button"
             className={`${
@@ -77,6 +119,7 @@ const Header = () => {
           >
             &#9776;
           </button>
+
           <button
             id="mobile-close-button"
             className={`${
@@ -112,35 +155,33 @@ const Header = () => {
               Create test
             </Link>
 
-            <button
+            {/* Mobile-only status indicator */}
+            <div
+              className="sm:hidden flex items-center gap-2 py-4"
               onClick={checkApiHealth}
-              className={`!m-0 py-4 sm:py-0 hover:text-blue-600 hover:underline hover:underline-offset-2 flex items-center gap-2 ${
-                apiStatus === "success"
-                  ? "text-green-400"
-                  : apiStatus === "error"
-                  ? "text-red-400"
-                  : "text-white"
-              }`}
             >
               {apiStatus === "checking" ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Checking...
+                  <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+                  <span>Checking API...</span>
                 </>
               ) : apiStatus === "success" ? (
                 <>
-                  <CheckCircle className="h-4 w-4" />
-                  API OK
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span>API Connected</span>
                 </>
               ) : apiStatus === "error" ? (
                 <>
-                  <XCircle className="h-4 w-4" />
-                  API Error
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <span>API Error</span>
                 </>
               ) : (
-                <>API Check</>
+                <>
+                  <div className="w-3 h-3 rounded-full bg-gray-400" />
+                  <span>Check API</span>
+                </>
               )}
-            </button>
+            </div>
 
             <Link
               href="#"
@@ -156,8 +197,8 @@ const Header = () => {
         </div>
       </header>
 
-      {/* API Status Toast */}
-      {apiStatus !== "idle" && apiMessage && (
+      {/* API Status Toast - only show when explicitly checking or on error */}
+      {apiMessage && (
         <div
           className={`fixed top-20 right-4 p-4 rounded-md shadow-lg z-50 max-w-xs transition-all duration-300 ${
             apiStatus === "checking"

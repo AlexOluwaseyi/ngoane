@@ -114,7 +114,37 @@ const Tests = () => {
             </tr>
           </thead>
           <tbody className="divide-y bg-black divide-gray-200">
-            {tests.length === 0 && (
+            {tests && tests.length > 0 ? (
+              tests.map((test, index) => (
+                <tr key={test.id} className="">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white border-r">
+                    {index + 1}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white border-r">
+                    {test.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white border-r">
+                    {test.patientName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center flex flex-col md:flex-row gap-4 items-center justify-center">
+                    <button>
+                      <Link
+                        href={`/tests/${test.id}`}
+                        className="inline-flex items-center px-3 py-1.5 border border-blue-600 text-xs font-medium rounded-md text-blue-700 bg-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        View Details
+                      </Link>
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(test)}
+                      className="hidden md:inline-flex items-center px-3 py-1.5 border border-red-600 text-xs font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td
                   colSpan={4}
@@ -124,35 +154,6 @@ const Tests = () => {
                 </td>
               </tr>
             )}
-            {tests.map((test, index) => (
-              <tr key={test.id} className="">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-white border-r">
-                  {index + 1}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white border-r">
-                  {test.id}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-white border-r">
-                  {test.patientName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-center flex flex-col md:flex-row gap-4 items-center justify-center">
-                  <button>
-                    <Link
-                      href={`/tests/${test.id}`}
-                      className="inline-flex items-center px-3 py-1.5 border border-blue-600 text-xs font-medium rounded-md text-blue-700 bg-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      View Details
-                    </Link>
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(test)}
-                    className="hidden md:inline-flex items-center px-3 py-1.5 border border-red-600 text-xs font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
