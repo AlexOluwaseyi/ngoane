@@ -34,10 +34,10 @@ const Header = () => {
   useEffect(() => {
     checkApiHealth();
 
-    // Check API every 30 seconds
+    // Check API every 120 seconds
     const interval = setInterval(() => {
       checkApiHealth();
-    }, 60000);
+    }, 120000);
 
     return () => clearInterval(interval);
   }, []);
@@ -84,7 +84,7 @@ const Header = () => {
       }
     } catch (error) {
       setApiStatus("error");
-      setApiMessage("Failed to connect to API");
+      setApiMessage(`Failed to connect to API ${error}`);
       console.error("API check error:", error);
     }
 
@@ -119,7 +119,7 @@ const Header = () => {
           <Link href="/">NGOANE</Link>
         </div>
 
-        <div className="col-span-1 grid grid-cols-1 gap-4">
+        <div className="flex flex-row-reverse md:col-span-1 md:grid md:grid-cols-1 gap-4">
           {/* Status Indicator Circle */}
           <div className="hidden sm:flex items-center absolute top-5 right-28">
             <div
@@ -196,7 +196,7 @@ const Header = () => {
               Create test
             </Link>
 
-            {/* Mobile-only status indicator */}
+            {/* Mobile-only status indicator 
             <div
               className="sm:hidden flex items-center gap-2 py-4"
               onClick={checkApiHealth}
@@ -222,7 +222,7 @@ const Header = () => {
                   <span>Check API</span>
                 </>
               )}
-            </div>
+            </div>*/}
 
             <Link
               href="#"
@@ -235,10 +235,37 @@ const Header = () => {
               More
             </Link>
           </nav>
+          {/* Mobile-only status indicator */}
+          <div
+            className="sm:hidden flex items-center gap-2 py-4"
+            onClick={checkApiHealth}
+          >
+            {apiStatus === "checking" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+                <span className="hidden md:block">Checking API...</span>
+              </>
+            ) : apiStatus === "success" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="hidden md:block">API Connected</span>
+              </>
+            ) : apiStatus === "error" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="hidden md:block">API Error</span>
+              </>
+            ) : (
+              <>
+                <div className="w-3 h-3 rounded-full bg-gray-400" />
+                <span className="hidden md:block">Check API</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* API Status Toast - only show when explicitly checking or on error */}
+      {/* API Status Toast - only show when explicitly checking or on success/error */}
       {apiMessage && (
         <div
           className={`fixed top-20 right-4 p-4 rounded-md shadow-lg z-50 max-w-xs transition-all duration-300 ${
@@ -263,6 +290,7 @@ const Header = () => {
           </div>
         </div>
       )}
+
       {/* Debug Panel */}
       <div className="fixed bottom-4 right-4 z-50">
         <button
@@ -279,7 +307,7 @@ const Header = () => {
         </button>
 
         {showDebugPanel && (
-          <div className="fixed bottom-16 right-4 w-96 max-h-[60vh] overflow-y-auto bg-gray-900 text-white rounded-md shadow-xl p-4">
+          <div className="fixed bottom-16 right-4 w-72 md:w-96 max-h-[60vh] overflow-y-auto bg-gray-900 text-white rounded-md shadow-xl p-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-lg font-semibold">Database Debug Info</h3>
               <button
