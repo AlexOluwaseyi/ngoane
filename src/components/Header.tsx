@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import TestRecord from "@/types/TestRecord";
 import CreateModal from "./modals/CreateModal";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -14,9 +14,20 @@ const Header = () => {
   >("idle");
   const [apiMessage, setApiMessage] = useState("");
 
+  // Define interface for debug data
+  interface DebugData {
+    urlPresent?: boolean;
+    databaseUrl?: string;
+    issues?: string[];
+    hasIssues?: boolean;
+    directUrlPresent?: boolean;
+    directUrl?: string;
+    [key: string]: boolean | string | string[] | undefined; // For any additional properties
+  }
+
   // Add these state variables inside your Header component
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const [debugData, setDebugData] = useState<any>(null);
+  const [debugData, setDebugData] = useState<DebugData | null>(null);
   const [isLoadingDebug, setIsLoadingDebug] = useState(false);
 
   // Check API status on component mount and periodically
