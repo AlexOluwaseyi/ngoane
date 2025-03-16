@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 
-function handlePrismaError(error: unknown) {
+function ErrorHandler(error: unknown) {
   // console.log(error)
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -40,9 +40,12 @@ function handlePrismaError(error: unknown) {
         };
 
       case "P2010":
+        if(error.meta){
         return {
           status: 500,
-          message: "Raw query failed. Invalid SQL syntax.",
+          message: `Raw query failed. Invalid SQL syntax. ${error.meta.target} - ${error.message}`,
+          // message: "Raw query failed. Invalid SQL syntax.",
+                };
         };
 
       default:
@@ -63,7 +66,8 @@ function handlePrismaError(error: unknown) {
   if (error instanceof Prisma.PrismaClientInitializationError) {
     return {
       status: 500,
-      message: "Database connection failed. Ensure the database is running.",
+      message: `${error.message} - ${error.errorCode}`,
+      // message: "Database connection failed. Ensure the database is running.",
     };
   }
 
@@ -122,4 +126,4 @@ function handlePrismaError(error: unknown) {
   };
 }
 
-export default handlePrismaError;
+export default ErrorHandler;

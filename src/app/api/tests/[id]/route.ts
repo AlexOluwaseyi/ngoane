@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import handlePrismaError from "@/lib/ErrorHandler";
+import ErrorHandler from "@/lib/ErrorHandler";
 
 
 /**
@@ -11,7 +11,7 @@ import handlePrismaError from "@/lib/ErrorHandler";
  * @param {Request} request - The HTTP request object containing the ID parameter
  * @param {Promise<{ id: string }>} params - The ID parameter from the request
  * @returns {Promise<Response>} JSON response with record or error message
- * @throws Will be caught and handled by handlePrismaError for any database errors
+ * @throws Will be caught and handled by ErrorHandler for any database errors
  */
 export async function GET(
   request: Request,
@@ -49,7 +49,7 @@ export async function GET(
     );
   } catch (error) {
     // Handle errors
-    const { status, message } = handlePrismaError(error);
+    const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }
 }
@@ -62,7 +62,7 @@ export async function GET(
  * @param {Request} request - The HTTP request object containing the ID parameter and JSON body
  * @param {Promise<{ id: string }>} params - The ID parameter from the request
  * @returns {Promise<Response>} JSON response with updated record or error message
- * @throws Will be caught and handled by handlePrismaError for any database errors
+ * @throws Will be caught and handled by ErrorHandler for any database errors
  */
 export async function PUT(
   request: Request,
@@ -131,7 +131,7 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    const { status, message } = handlePrismaError(error);
+    const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }
 }
@@ -144,7 +144,7 @@ export async function PUT(
  * @param {Request} request - The HTTP request object containing the ID parameter
  * @param {Promise<{ id: string }>} params - The ID parameter from the request
  * @returns {Promise<Response>} JSON response with success message or error message
- * @throws Will be caught and handled by handlePrismaError for any database errors
+ * @throws Will be caught and handled by ErrorHandler for any database errors
  */
 export async function DELETE(
   request: Request,
@@ -181,7 +181,7 @@ export async function DELETE(
     // Return success message and status 200
     return NextResponse.json({ message: "Record deleted" }, { status: 200 });
   } catch (error) {
-    const { status, message } = handlePrismaError(error);
+    const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }
 }

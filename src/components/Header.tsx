@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import TestRecord from "@/types/TestRecord";
 import CreateModal from "./modals/CreateModal";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, Database, AlertTriangle } from "lucide-react";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,8 +14,23 @@ const Header = () => {
   >("idle");
   const [apiMessage, setApiMessage] = useState("");
 
-  // Update the checkApiHealth function to handle fetch errors properly
+  // Define interface for debug data
+  interface DebugData {
+    urlPresent?: boolean;
+    databaseUrl?: string;
+    issues?: string[];
+    hasIssues?: boolean;
+    directUrlPresent?: boolean;
+    directUrl?: string;
+    [key: string]: boolean | string | string[] | undefined; // For any additional properties
+  }
 
+  // Add these state variables inside your Header component
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [debugData, setDebugData] = useState<DebugData | null>(null);
+  const [isLoadingDebug, setIsLoadingDebug] = useState(false);
+
+  // Update the checkApiHealth function to handle fetch errors properly
   const checkApiHealth = useCallback(
     async (e?: React.MouseEvent) => {
       if (e) e.preventDefault();
@@ -70,13 +86,19 @@ const Header = () => {
   useEffect(() => {
     checkApiHealth();
 
-    // Check API every 30 seconds
+    // Check API every 120 seconds
     const interval = setInterval(() => {
       checkApiHealth();
-    }, 60000);
+    }, 120000);
 
     return () => clearInterval(interval);
   }, [checkApiHealth]);
+
+  useEffect(() => {
+    if (showDebugPanel && !debugData) {
+      fetchDebug();
+    }
+  }, [showDebugPanel, debugData]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -94,6 +116,24 @@ const Header = () => {
     window.location.href = `/tests/${newTest.id}`;
   };
 
+  // Update your fetchDebug function to set the state
+  const fetchDebug = async () => {
+    try {
+      setIsLoadingDebug(true);
+      const response = await fetch("/api/debug");
+      const data = await response.json();
+      setDebugData(data);
+      console.log("Debug data:", data);
+      return data;
+    } catch (error) {
+      console.error("Debug error:", error);
+      setDebugData({ error: "Failed to fetch debug information" });
+      return null;
+    } finally {
+      setIsLoadingDebug(false);
+    }
+  };
+
   return (
     <>
       <header className="bg-black max-w-4xl md:max-w-10/12 mx-auto text-white h-16 flex items-center justify-between px-6">
@@ -101,7 +141,7 @@ const Header = () => {
           <Link href="/">NGOANE</Link>
         </div>
 
-        <div className="col-span-1 grid grid-cols-1 gap-4">
+        <div className="flex flex-row-reverse md:col-span-1 md:grid md:grid-cols-1 gap-4">
           {/* Status Indicator Circle */}
           <div className="hidden sm:flex items-center justify-center absolute top-5 right-28">
             <div
@@ -178,34 +218,6 @@ const Header = () => {
               Create test
             </Link>
 
-            {/* Mobile-only status indicator */}
-            <div
-              className="sm:hidden flex items-center gap-2 py-4"
-              onClick={checkApiHealth}
-            >
-              {apiStatus === "checking" ? (
-                <>
-                  <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
-                  <span>Checking API...</span>
-                </>
-              ) : apiStatus === "success" ? (
-                <>
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span>API Connected</span>
-                </>
-              ) : apiStatus === "error" ? (
-                <>
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <span>API Error</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-3 h-3 rounded-full bg-gray-400" />
-                  <span>Check API</span>
-                </>
-              )}
-            </div>
-
             <Link
               href="#"
               onClick={() => {
@@ -217,10 +229,37 @@ const Header = () => {
               More
             </Link>
           </nav>
+          {/* Mobile-only status indicator */}
+          <div
+            className="sm:hidden flex items-center gap-2 py-4"
+            onClick={checkApiHealth}
+          >
+            {apiStatus === "checking" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-blue-400 animate-pulse" />
+                <span className="hidden md:block">Checking API...</span>
+              </>
+            ) : apiStatus === "success" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="hidden md:block">API Connected</span>
+              </>
+            ) : apiStatus === "error" ? (
+              <>
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="hidden md:block">API Error</span>
+              </>
+            ) : (
+              <>
+                <div className="w-3 h-3 rounded-full bg-gray-400" />
+                <span className="hidden md:block">Check API</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* API Status Toast - only show when explicitly checking or on error */}
+      {/* API Status Toast - only show when explicitly checking or on success/error */}
       {apiMessage && (
         <div
           className={`fixed top-20 right-4 p-4 rounded-md shadow-lg z-50 max-w-xs transition-all duration-300 ${
@@ -245,6 +284,142 @@ const Header = () => {
           </div>
         </div>
       )}
+
+      {/* Debug Panel */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <button
+          onClick={() => setShowDebugPanel(!showDebugPanel)}
+          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-md shadow-lg"
+        >
+          <Database className="h-4 w-4" />
+          Debug
+          {showDebugPanel ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronUp className="h-4 w-4" />
+          )}
+        </button>
+
+        {showDebugPanel && (
+          <div className="fixed bottom-16 right-4 w-72 md:w-96 max-h-[60vh] overflow-y-auto bg-gray-900 text-white rounded-md shadow-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold">Database Debug Info</h3>
+              <button
+                onClick={() => fetchDebug()}
+                className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded"
+                disabled={isLoadingDebug}
+              >
+                {isLoadingDebug ? "Loading..." : "Refresh"}
+              </button>
+            </div>
+
+            {isLoadingDebug ? (
+              <div className="flex justify-center items-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+              </div>
+            ) : debugData ? (
+              <div className="space-y-3 text-sm">
+                {/* Database URL Status */}
+                <div className="p-2 border border-gray-700 rounded">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-medium">Database URL:</span>
+                      <span
+                        className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                          debugData.urlPresent ? "bg-green-900" : "bg-red-900"
+                        }`}
+                      >
+                        {debugData.urlPresent ? "Present" : "Missing"}
+                      </span>
+                    </div>
+                    {debugData.hasIssues && (
+                      <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Display maskable version of the URL */}
+                  {debugData.databaseUrl && (
+                    <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
+                      {/* Only display part of the URL for security */}
+                      <div className="whitespace-pre-wrap break-all">
+                        {debugData.databaseUrl.replace(
+                          /\/\/([^:]+):([^@]+)@/,
+                          "//$1:********@"
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show any URL issues */}
+                  {debugData.issues && debugData.issues.length > 0 && (
+                    <div className="mt-2 border-t border-gray-700 pt-2">
+                      <div className="text-yellow-500 text-xs font-medium mb-1">
+                        Issues:
+                      </div>
+                      <ul className="list-disc list-inside text-xs">
+                        {debugData.issues.map((issue: string, idx: number) => (
+                          <li key={idx} className="text-yellow-400">
+                            {issue}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Direct URL Status */}
+                <div className="p-2 border border-gray-700 rounded">
+                  <div className="flex justify-between">
+                    <div>
+                      <span className="font-medium">Direct URL:</span>
+                      <span
+                        className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                          debugData.directUrlPresent
+                            ? "bg-green-900"
+                            : "bg-red-900"
+                        }`}
+                      >
+                        {debugData.directUrlPresent ? "Present" : "Missing"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {debugData.directUrl && (
+                    <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
+                      <div className="whitespace-pre-wrap break-all">
+                        {debugData.directUrl.replace(
+                          /\/\/([^:]+):([^@]+)@/,
+                          "//$1:********@"
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Raw Debug Data - Expandable Section */}
+                <div className="p-2 border border-gray-700 rounded">
+                  <details>
+                    <summary className="cursor-pointer font-medium">
+                      Raw Debug Data
+                    </summary>
+                    <pre className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs">
+                      {JSON.stringify(debugData, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-400 text-center py-4">
+                No debug data available
+              </div>
+            )}
+
+            <div className="mt-4 text-xs text-gray-400 border-t border-gray-700 pt-2">
+              <span>This panel is for development/debugging only.</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Add Create Modal component */}
       <CreateModal
