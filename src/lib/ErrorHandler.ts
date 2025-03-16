@@ -63,7 +63,8 @@ function handlePrismaError(error: unknown) {
   if (error instanceof Prisma.PrismaClientInitializationError) {
     return {
       status: 500,
-      message: "Database connection failed. Ensure the database is running.",
+      message: `${error.message} - ${error.errorCode}`,
+      // message: "Database connection failed. Ensure the database is running.",
     };
   }
 
