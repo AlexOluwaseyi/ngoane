@@ -40,9 +40,12 @@ function ErrorHandler(error: unknown) {
         };
 
       case "P2010":
+        if(error.meta){
         return {
           status: 500,
-          message: "Raw query failed. Invalid SQL syntax.",
+          message: `Raw query failed. Invalid SQL syntax. ${error.meta.target} - ${error.message}`,
+          // message: "Raw query failed. Invalid SQL syntax.",
+                };
         };
 
       default:
