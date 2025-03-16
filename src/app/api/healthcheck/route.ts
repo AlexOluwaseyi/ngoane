@@ -31,6 +31,7 @@ export async function GET() {
     //   message: "Database connection failed", 
     //   error: error
     // }, { status: 500 });
+    console.log(error)
     const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }

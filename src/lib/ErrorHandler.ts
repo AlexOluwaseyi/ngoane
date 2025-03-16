@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 
 function ErrorHandler(error: unknown) {
-  console.log(error)
+  // console.log(error)
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
