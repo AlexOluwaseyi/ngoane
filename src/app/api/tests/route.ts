@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import handlePrismaError from "@/lib/ErrorHandler";
+import ErrorHandler from "@/lib/ErrorHandler";
 
 /**
  * GET /api/tests - Get all diagnostic tests
  *
  * Fetches all diagnostic test records from the database through Prisma ORM.
  * @returns {Promise<Response>} JSON response with all records or error message
- * @throws Will be caught and handled by handlePrismaError for any database errors
+ * @throws Will be caught and handled by ErrorHandler for any database errors
  */
 export async function GET(): Promise<Response> {
   try {
@@ -26,7 +26,7 @@ export async function GET(): Promise<Response> {
     return Response.json({ message: "Records found", Records: allRecords });
   } catch (error) {
     // Handle errors
-    const { status, message } = handlePrismaError(error);
+    const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }
 }
@@ -46,7 +46,7 @@ export async function GET(): Promise<Response> {
  *
  * @param {Request} request - The HTTP request object containing the JSON body
  * @returns {Promise<Response>} JSON response with created record or error message
- * @throws Will be caught and handled by handlePrismaError for any database errors
+ * @throws Will be caught and handled by ErrorHandler for any database errors
  */
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -85,7 +85,7 @@ export async function POST(request: Request): Promise<Response> {
     );
   } catch (error) {
     // Handle errors
-    const { status, message } = handlePrismaError(error);
+    const { status, message } = ErrorHandler(error);
     return NextResponse.json({ message: message }, { status });
   }
 }

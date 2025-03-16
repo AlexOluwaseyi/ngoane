@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 
-function handlePrismaError(error: unknown) {
-  // console.log(error)
+function ErrorHandler(error: unknown) {
+  console.log(error)
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
@@ -123,4 +123,4 @@ function handlePrismaError(error: unknown) {
   };
 }
 
-export default handlePrismaError;
+export default ErrorHandler;
