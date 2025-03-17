@@ -9,19 +9,13 @@ export async function GET(request: NextRequest) {
 
   const isAllowed = isPreview || isDevelopment || isLocalhost;
 
-  //   // Only allow with correct auth or on localhost
-  //   if (process.env.NODE_ENV === 'production' && !isLocalhost &&
-  //       authHeader !== `Bearer ${process.env.DEBUG_SECRET}`) {
-  //     return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-  //   }
-
-  console.log({
-    vercelEnv,
-    isPreview,
-    isDevelopment,
-    isLocalhost,
-    isAllowed,
-  });
+  // console.log({
+  //   vercelEnv,
+  //   isPreview,
+  //   isDevelopment,
+  //   isLocalhost,
+  //   isAllowed,
+  // });
 
   if (!isAllowed) {
     return NextResponse.json(
