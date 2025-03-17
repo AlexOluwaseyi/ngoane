@@ -27,6 +27,7 @@ const Header = () => {
 
   // Add these state variables inside your Header component
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [isDebugAllowed, setIsDebugAllowed] = useState<boolean | null>(null);
   const [debugData, setDebugData] = useState<DebugData | null>(null);
   const [isLoadingDebug, setIsLoadingDebug] = useState(false);
 
@@ -94,6 +95,12 @@ const Header = () => {
     return () => clearInterval(interval);
   }, [checkApiHealth]);
 
+  // Fetch debug data on component mount
+  useEffect(() => {
+    // Fetch debug data when the component mounts
+    fetchDebug();
+  }, []);
+
   useEffect(() => {
     if (showDebugPanel && !debugData) {
       fetchDebug();
@@ -122,12 +129,21 @@ const Header = () => {
       setIsLoadingDebug(true);
       const response = await fetch("/api/debug");
       const data = await response.json();
-      setDebugData(data);
-      console.log("Debug data:", data);
+      if (response.status == 403) {
+        setIsDebugAllowed(false);
+        setDebugData({ isAllowed: false, ...data });
+        console.log("Debug not allowed in current environment");
+      } else {
+        setIsDebugAllowed(true);
+        setDebugData(data);
+        console.log("Debug data loaded.");
+      }
       return data;
     } catch (error) {
-      console.error("Debug error:", error);
-      setDebugData({ error: "Failed to fetch debug information" });
+      setDebugData({
+        error: "Failed to fetch debug information",
+        message: `${error}`,
+      });
       return null;
     } finally {
       setIsLoadingDebug(false);
@@ -258,7 +274,6 @@ const Header = () => {
           </div>
         </div>
       </header>
-
       {/* API Status Toast - only show when explicitly checking or on success/error */}
       {apiMessage && (
         <div
@@ -286,141 +301,146 @@ const Header = () => {
       )}
 
       {/* Debug Panel */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setShowDebugPanel(!showDebugPanel)}
-          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-md shadow-lg"
-        >
-          <Database className="h-4 w-4" />
-          Debug
-          {showDebugPanel ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronUp className="h-4 w-4" />
-          )}
-        </button>
+      {isDebugAllowed === true && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            onClick={() => setShowDebugPanel(!showDebugPanel)}
+            className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-md shadow-lg"
+          >
+            <Database className="h-4 w-4" />
+            Debug
+            {showDebugPanel ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronUp className="h-4 w-4" />
+            )}
+          </button>
 
-        {showDebugPanel && (
-          <div className="fixed bottom-16 right-4 w-72 md:w-96 max-h-[60vh] overflow-y-auto bg-gray-900 text-white rounded-md shadow-xl p-4">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold">Database Debug Info</h3>
-              <button
-                onClick={() => fetchDebug()}
-                className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded"
-                disabled={isLoadingDebug}
-              >
-                {isLoadingDebug ? "Loading..." : "Refresh"}
-              </button>
-            </div>
+          {/* {showDebugPanel && ( */}
 
-            {isLoadingDebug ? (
-              <div className="flex justify-center items-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+          {showDebugPanel && (
+            <div className="fixed bottom-16 right-4 w-72 md:w-96 h-auto overflow-y-auto bg-gray-900 text-white rounded-md shadow-xl p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold">Database Debug Info</h3>
+                <button
+                  onClick={() => fetchDebug()}
+                  className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded"
+                  disabled={isLoadingDebug}
+                >
+                  {isLoadingDebug ? "Loading..." : "Refresh"}
+                </button>
               </div>
-            ) : debugData ? (
-              <div className="space-y-3 text-sm">
-                {/* Database URL Status */}
-                <div className="p-2 border border-gray-700 rounded">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-medium">Database URL:</span>
-                      <span
-                        className={`ml-2 px-2 py-0.5 text-xs rounded ${
-                          debugData.urlPresent ? "bg-green-900" : "bg-red-900"
-                        }`}
-                      >
-                        {debugData.urlPresent ? "Present" : "Missing"}
-                      </span>
+
+              {isLoadingDebug ? (
+                <div className="flex justify-center items-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                </div>
+              ) : debugData ? (
+                <div className="space-y-3 text-sm">
+                  {/* Database URL Status */}
+                  <div className="p-2 border border-gray-700 rounded">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-medium">Database URL:</span>
+                        <span
+                          className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                            debugData.urlPresent ? "bg-green-900" : "bg-red-900"
+                          }`}
+                        >
+                          {debugData.urlPresent ? "Present" : "Missing"}
+                        </span>
+                      </div>
+                      {debugData.hasIssues && (
+                        <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                      )}
                     </div>
-                    {debugData.hasIssues && (
-                      <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+
+                    {/* Display maskable version of the URL */}
+                    {debugData.databaseUrl && (
+                      <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
+                        {/* Only display part of the URL for security */}
+                        <div className="whitespace-pre-wrap break-all">
+                          {debugData.databaseUrl.replace(
+                            /\/\/([^:]+):([^@]+)@/,
+                            "//$1:********@"
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Show any URL issues */}
+                    {debugData.issues && debugData.issues.length > 0 && (
+                      <div className="mt-2 border-t border-gray-700 pt-2">
+                        <div className="text-yellow-500 text-xs font-medium mb-1">
+                          Issues:
+                        </div>
+                        <ul className="list-disc list-inside text-xs">
+                          {debugData.issues.map(
+                            (issue: string, idx: number) => (
+                              <li key={idx} className="text-yellow-400">
+                                {issue}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
                     )}
                   </div>
 
-                  {/* Display maskable version of the URL */}
-                  {debugData.databaseUrl && (
-                    <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
-                      {/* Only display part of the URL for security */}
-                      <div className="whitespace-pre-wrap break-all">
-                        {debugData.databaseUrl.replace(
-                          /\/\/([^:]+):([^@]+)@/,
-                          "//$1:********@"
-                        )}
+                  {/* Direct URL Status */}
+                  <div className="p-2 border border-gray-700 rounded">
+                    <div className="flex justify-between">
+                      <div>
+                        <span className="font-medium">Direct URL:</span>
+                        <span
+                          className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                            debugData.directUrlPresent
+                              ? "bg-green-900"
+                              : "bg-red-900"
+                          }`}
+                        >
+                          {debugData.directUrlPresent ? "Present" : "Missing"}
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                  {/* Show any URL issues */}
-                  {debugData.issues && debugData.issues.length > 0 && (
-                    <div className="mt-2 border-t border-gray-700 pt-2">
-                      <div className="text-yellow-500 text-xs font-medium mb-1">
-                        Issues:
+                    {debugData.directUrl && (
+                      <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
+                        <div className="whitespace-pre-wrap break-all">
+                          {debugData.directUrl.replace(
+                            /\/\/([^:]+):([^@]+)@/,
+                            "//$1:********@"
+                          )}
+                        </div>
                       </div>
-                      <ul className="list-disc list-inside text-xs">
-                        {debugData.issues.map((issue: string, idx: number) => (
-                          <li key={idx} className="text-yellow-400">
-                            {issue}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Direct URL Status */}
-                <div className="p-2 border border-gray-700 rounded">
-                  <div className="flex justify-between">
-                    <div>
-                      <span className="font-medium">Direct URL:</span>
-                      <span
-                        className={`ml-2 px-2 py-0.5 text-xs rounded ${
-                          debugData.directUrlPresent
-                            ? "bg-green-900"
-                            : "bg-red-900"
-                        }`}
-                      >
-                        {debugData.directUrlPresent ? "Present" : "Missing"}
-                      </span>
-                    </div>
+                    )}
                   </div>
 
-                  {debugData.directUrl && (
-                    <div className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs font-mono">
-                      <div className="whitespace-pre-wrap break-all">
-                        {debugData.directUrl.replace(
-                          /\/\/([^:]+):([^@]+)@/,
-                          "//$1:********@"
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {/* Raw Debug Data - Expandable Section */}
+                  <div className="p-2 border border-gray-700 rounded">
+                    <details>
+                      <summary className="cursor-pointer font-medium">
+                        Raw Debug Data
+                      </summary>
+                      <pre className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs">
+                        {JSON.stringify(debugData, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
                 </div>
-
-                {/* Raw Debug Data - Expandable Section */}
-                <div className="p-2 border border-gray-700 rounded">
-                  <details>
-                    <summary className="cursor-pointer font-medium">
-                      Raw Debug Data
-                    </summary>
-                    <pre className="mt-2 bg-gray-800 p-2 rounded overflow-x-auto text-xs">
-                      {JSON.stringify(debugData, null, 2)}
-                    </pre>
-                  </details>
+              ) : (
+                <div className="text-gray-400 text-center py-4">
+                  No debug data available
                 </div>
-              </div>
-            ) : (
-              <div className="text-gray-400 text-center py-4">
-                No debug data available
-              </div>
-            )}
+              )}
 
-            <div className="mt-4 text-xs text-gray-400 border-t border-gray-700 pt-2">
-              <span>This panel is for development/debugging only.</span>
+              <div className="mt-4 text-xs text-gray-400 border-t border-gray-700 pt-2">
+                <span>This panel is for development/debugging only.</span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
+          )}
+        </div>
+      )}
       {/* Add Create Modal component */}
       <CreateModal
         isOpen={isCreateModalOpen}
