@@ -43,8 +43,7 @@ function ErrorHandler(error: unknown) {
         if(error.meta){
         return {
           status: 500,
-          message: `Raw query failed. Invalid SQL syntax. ${error.meta.target} - ${error.message}`,
-          // message: "Raw query failed. Invalid SQL syntax.",
+          message: "Raw query failed. Invalid SQL syntax.",
                 };
         };
 
@@ -66,8 +65,7 @@ function ErrorHandler(error: unknown) {
   if (error instanceof Prisma.PrismaClientInitializationError) {
     return {
       status: 500,
-      message: `${error.message} - ${error.errorCode}`,
-      // message: "Database connection failed. Ensure the database is running.",
+      message: "Database connection failed. Ensure the database is running.",
     };
   }
 
