@@ -2,11 +2,13 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 */6 * *'  # Every 6 days
+    - cron: "0 0 */6 * *" # Every 6 days
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase Tests table
-        run: curl -s -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" "https://${{ secrets.NGOANE_PROJECT_REF }}.supabase.co/rest/v1/DiagnosticTest?select=id" || echo "Ping failed"
+        run: |
+          curl -s -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" "https://${{ secrets.NGOANE_PROJECT_REF }}.supabase.co/rest/v1/DiagnosticTest?select=id" || echo "Ping failed"
