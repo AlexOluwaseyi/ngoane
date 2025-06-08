@@ -1,4 +1,6 @@
-# **alexoluwaseyi-ngoane**
+# **Ngoane Medical Testing**
+
+[![Keep Supabase Alive](https://github.com/AlexOluwaseyi/ngoane/actions/workflows/supabase.yml/badge.svg)](https://github.com/AlexOluwaseyi/ngoane/actions/workflows/supabase.yml)
 
 A **Next.js** project with **Prisma** for database management, **TypeScript** for type safety, and a structured API for handling test-related data.
 
